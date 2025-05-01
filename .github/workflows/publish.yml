@@ -1,5 +1,8 @@
 name: Publish
 on:
+  push:
+    tags:
+      - 'v*.*.*' 
   workflow_dispatch: 
     inputs: 
       version:
@@ -16,11 +19,26 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        
+      # バージョン設定
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # タグから'v'を削除してバージョン取得
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION >> $GITHUB_OUTPUT
+          else
+            # 手動実行の場合は入力されたバージョンを使用
+            echo "version=${{ inputs.version }}" >> GITHUB_OUTPUT
+          fi
+          
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
       - uses: docker/metadata-action@v5
         id: meta
         with: 
@@ -30,6 +48,7 @@ jobs:
             type=raw,value=latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            
       - uses: docker/build-push-action@v5
         with: 
           push: true
