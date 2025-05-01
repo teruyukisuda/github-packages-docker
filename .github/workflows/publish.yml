@@ -26,7 +26,7 @@ jobs:
         with: 
           images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=v{{ inputs.version }}
+            type=semver,pattern={{version}},value=v${{ inputs.version }}
             type=raw,value=latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
